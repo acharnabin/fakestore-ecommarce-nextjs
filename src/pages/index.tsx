@@ -1,12 +1,11 @@
 import { getProductList } from "@/api/functions/products.api";
 import ProductBannerCard from "@/components/Products/ProductBannerCard";
 import ProductCard from "@/components/Products/ProductCard";
-import Header from "@/layout/Header";
 import { useQuery } from "@tanstack/react-query";
 import Slider from "react-slick";
 
 export default function Home() {
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["product-list"],
     queryFn: getProductList,
   });
