@@ -10,6 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { getProductDetails } from "@/api/functions/products.api";
+import { Star, StarHalf, StarOff } from "lucide-react";
+
 
 interface IProductBannerCardProps {
   id: number;
@@ -20,6 +22,30 @@ const ProductBannerCard = ({ id }: IProductBannerCardProps) => {
     queryKey: ["product-details", id],
     queryFn: () => getProductDetails(id),
   });
+
+  const renderStars = (rating: number) => {
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+
+    return (
+      <div className="flex items-center gap-1">
+        {[...Array(full)].map((_, i) => (
+          <Star
+            key={`full-${i}`}
+            size={18}
+            className="text-yellow-500 fill-yellow-500"
+          />
+        ))}
+        {half && (
+          <StarHalf size={18} className="text-yellow-500 fill-yellow-500" />
+        )}
+        {[...Array(empty)].map((_, i) => (
+          <StarOff key={`empty-${i}`} size={18} className="text-gray-300" />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <Card className="p-6 shadow-md rounded-2xl bg-white">
@@ -36,25 +62,38 @@ const ProductBannerCard = ({ id }: IProductBannerCardProps) => {
             </>
           ) : (
             <>
+              {/* Category */}
+              {data?.category && (
+                <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full inline-block mb-3">
+                  {data.category}
+                </span>
+              )}
+
+              {/* Title */}
               <h2 className="text-3xl font-semibold text-gray-800 mb-2">
                 {data?.title}
               </h2>
-              <p className="text-gray-600 mb-4">{data?.description}</p>
-              <span className="text-xl font-bold text-green-600 mb-6 inline-block">
-                ${data?.price}
-              </span>
 
+              {/* Price & Rating */}
+              <div className="flex items-center justify-between mb-6">
+                <span className="text-xl font-bold text-green-600">
+                  ${data?.price}
+                </span>
+                {data?.rating && renderStars(data.rating.rate)}
+              </div>
+
+              {/* Accordion */}
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="details">
-                  <AccordionTrigger>Details</AccordionTrigger>
+                  <AccordionTrigger>Description</AccordionTrigger>
                   <AccordionContent>
-                    Yes. It adheres to the WAI-ARIA design pattern.
+                    {data?.description || "No details available."}
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="shipping">
                   <AccordionTrigger>Shipping</AccordionTrigger>
                   <AccordionContent>
-                    Shipping information goes here.
+                    Free shipping on all orders over $50. Ships in 1-2 days.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -63,17 +102,17 @@ const ProductBannerCard = ({ id }: IProductBannerCardProps) => {
         </div>
 
         {/* Image Section */}
-        <div className="flex items-center justify-center bg-gray-100 rounded-xl p-4 min-w-[200px] min-h-[200px]">
+        <div className="flex items-center justify-center bg-gray-100 rounded-xl p-4 min-w-[220px] min-h-[220px]">
           {isLoading ? (
             <Skeleton className="h-[200px] w-[200px] rounded-lg" />
           ) : (
             data?.image && (
               <Image
                 src={data.image}
-                height={200}
-                width={200}
+                height={220}
+                width={220}
                 alt="product"
-                className="rounded-lg object-contain"
+                className="rounded-lg object-contain max-h-[220px]"
               />
             )
           )}
