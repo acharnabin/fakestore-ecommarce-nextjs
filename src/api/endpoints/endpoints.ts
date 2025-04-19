@@ -7,6 +7,9 @@ export const endpoints={
         details:(id:number)=>`/products/${id}`,
         category:"/products/categories",
         categoryProducts:(cat:string)=>`products/category/${cat}`
+    },
+    auth:{
+        login:"auth/login"
     }
 }
 

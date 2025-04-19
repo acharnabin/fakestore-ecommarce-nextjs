@@ -2,11 +2,13 @@ import { getProductDetails } from "@/api/functions/products.api";
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Star, StarHalf, StarOff } from "lucide-react";
 import CategoryProducts from "@/components/Products/CategoryProducts";
+import { useStoreState } from "zustand-x";
+import { cartStore } from "@/store/cart.store";
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -15,6 +17,7 @@ const ProductDetailsPage = () => {
     queryFn: () => getProductDetails(Number(id)),
     enabled: !!id,
   });
+  const [cartItems, setCartItems] = useStoreState(cartStore, "cartItems");
 
   const renderStars = (rating: number) => {
     const full = Math.floor(rating);
@@ -39,6 +42,22 @@ const ProductDetailsPage = () => {
       </div>
     );
   };
+
+  const handleAddToCart = () => {
+    if (!!data) {
+      const index = cartItems.findIndex((cart) => cart?.id === data.id);
+
+      if (index === -1) {
+        setCartItems([...cartItems, data]);
+      }
+    }
+  };
+
+  const isItemAdded = useMemo(() => {
+    const item = cartItems.find((cart) => cart?.id === data?.id);
+    console.log(item)
+    return Boolean(item);
+  }, [data, cartItems]);
 
   return (
     <div className="bg-gray-50">
@@ -106,9 +125,21 @@ const ProductDetailsPage = () => {
                 </div>
 
                 {/* CTA */}
-                <button className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition duration-300 w-fit">
-                  Add to Cart
-                </button>
+                {isItemAdded ? (
+                  <button
+                    disabled
+                    className="bg-gray-50-600  px-6 py-3 rounded-xl text-black transition duration-300 w-fit"
+                  >
+                    Added to Cart
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleAddToCart}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition duration-300 w-fit"
+                  >
+                    Add to Cart
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -122,7 +153,7 @@ const ProductDetailsPage = () => {
             You May Also Like
           </h2>
           <div className="mt-2">
-          <CategoryProducts slug={data?.category} />
+            <CategoryProducts slug={data?.category} />
           </div>
         </section>
       )}

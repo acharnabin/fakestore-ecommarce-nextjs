@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Layout from "@/layout/Layout";
+import { Toaster } from 'sonner'
+import ProtectedRouteWrapper from "@/layout/ProtectedRouteWrapper";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +28,13 @@ export default function App({ Component, pageProps }: AppProps) {
     >
       <QueryClientProvider client={queryClient}>
         <Layout>
-          <Component {...pageProps} />
+          <ProtectedRouteWrapper>
+            <Component {...pageProps} />
+          </ProtectedRouteWrapper>
+          
+          <Toaster
+           position="top-center"
+          />
         </Layout>
       </QueryClientProvider>
     </div>
