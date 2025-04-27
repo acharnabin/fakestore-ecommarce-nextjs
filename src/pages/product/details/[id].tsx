@@ -10,14 +10,19 @@ import CategoryProducts from "@/components/Products/CategoryProducts";
 import { useStoreState } from "zustand-x";
 import { cartStore } from "@/store/cart.store";
 
+import useAddToCart from "@/hooks/supabase/useCart";
+
 const ProductDetailsPage = () => {
+
   const { id } = useParams();
   const { data, isLoading } = useQuery({
     queryKey: ["product-details", id],
     queryFn: () => getProductDetails(Number(id)),
     enabled: !!id,
   });
+  
   const [cartItems, setCartItems] = useStoreState(cartStore, "cartItems");
+  const {addToCart,removeFromCart}=useAddToCart()
 
   const renderStars = (rating: number) => {
     const full = Math.floor(rating);
@@ -43,21 +48,14 @@ const ProductDetailsPage = () => {
     );
   };
 
-  const handleAddToCart = () => {
-    if (!!data) {
-      const index = cartItems.findIndex((cart) => cart?.id === data.id);
 
-      if (index === -1) {
-        setCartItems([...cartItems, data]);
-      }
-    }
-  };
 
   const isItemAdded = useMemo(() => {
-    const item = cartItems.find((cart) => cart?.id === data?.id);
-    console.log(item)
+    const item = cartItems.find((cart) => cart?.productID === data?.id);
+
     return Boolean(item);
   }, [data, cartItems]);
+
 
   return (
     <div className="bg-gray-50">
@@ -128,13 +126,14 @@ const ProductDetailsPage = () => {
                 {isItemAdded ? (
                   <button
                     disabled
+                    onClick={()=>removeFromCart(data?.id)}
                     className="bg-gray-50-600  px-6 py-3 rounded-xl text-black transition duration-300 w-fit"
                   >
                     Added to Cart
                   </button>
                 ) : (
                   <button
-                    onClick={handleAddToCart}
+                    onClick={()=>addToCart(data)}
                     className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition duration-300 w-fit"
                   >
                     Add to Cart

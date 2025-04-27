@@ -2,7 +2,6 @@ import React, { useMemo } from "react";
 import {
   Table,
   TableBody,
-
   TableCell,
   TableFooter,
   TableHead,
@@ -12,14 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { useStoreState } from "zustand-x";
 import { cartStore } from "@/store/cart.store";
+import useAddToCart from "@/hooks/supabase/useCart";
 
 const Cart = () => {
-  const [cartItems, setCartItems] = useStoreState(cartStore, "cartItems");
-
-  const handleDelete = (index: number) => {
-    const updatedItems = cartItems.filter((_, i) => i !== index);
-    setCartItems(updatedItems);
-  };
+  const [cartItems] = useStoreState(cartStore, "cartItems");
+  const { removeFromCart } = useAddToCart();
+  
 
   const total = useMemo(() => {
     return cartItems.reduce((sum, item) => sum + item?.price, 0);
@@ -39,39 +36,52 @@ const Cart = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {cartItems?.map((cart, index) => (
-              <TableRow key={cart?.id}>
-                <TableCell className="font-medium">{cart?.title}</TableCell>
-                <TableCell>${cart?.price?.toFixed(2)}</TableCell>
-                <TableCell>
-                  <img
-                    src={cart.image}
-                    alt={cart.title}
-                    className="h-12 w-12 object-cover rounded-md"
-                  />
+            {cartItems?.length > 0 ? (
+              cartItems.map((cart) => (
+                <TableRow key={cart?.id}>
+                  <TableCell className="font-medium">{cart?.title}</TableCell>
+                  <TableCell>${cart?.price?.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <img
+                      src={cart?.photo}
+                      alt={cart?.title}
+                      className="h-12 w-12 object-cover rounded-md"
+                    />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeFromCart(cart?.id)}
+                      className="cursor-pointer"
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-10 text-gray-500">
+                  Your cart is empty.
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(index)}
-                  >
-                    Delete
+              </TableRow>
+            )}
+          </TableBody>
+          {cartItems?.length > 0 && (
+            <TableFooter>
+              <TableRow>
+                <TableCell colSpan={3} className="font-semibold">
+                  Total
+                </TableCell>
+                <TableCell className="text-right font-semibold">
+                   <Button>
+                    Checkout ${total.toFixed(2)}
                   </Button>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TableCell colSpan={3} className="font-semibold">
-                Total
-              </TableCell>
-              <TableCell className="text-right font-semibold">
-                ${total.toFixed(2)}
-              </TableCell>
-            </TableRow>
-          </TableFooter>
+            </TableFooter>
+          )}
         </Table>
       </div>
     </div>

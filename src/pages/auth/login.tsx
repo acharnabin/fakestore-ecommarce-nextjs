@@ -15,13 +15,16 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useStoreState } from "zustand-x";
 import { authStore } from "@/store/auth.store";
+import Cookies from "js-cookie";
+
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
   const [payload, setPayload] = useState({
-    username: "",
+    email: "",
     password: "",
   });
-  const router=useRouter()
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useStoreState(authStore, "isLoggedIn");
 
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -31,20 +34,27 @@ export default function LoginForm() {
     });
   };
 
-  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("test");
+    const supabse = createClient();
 
-    loginFunction(payload)
-      .then((data) => {
-        toast.success("Login sucessfull")
-        setIsLoggedIn(true)
-        localStorage.setItem('token',data?.token)
-        router.push('/')
-       
-      })
-      .catch((e) => {
-        alert("Unable to login");
-      });
+    const { data, error } = await supabse.auth.signInWithPassword({
+      ...payload,
+    });
+
+    if (data?.session?.access_token) {
+      toast.success("Login sucessfull");
+      setIsLoggedIn(true);
+      Cookies.set("token", data.session.access_token, { expires: 7 });
+      Cookies.set("userid", data.user.id);
+      
+      router.push("/");
+    }
+
+    if (error) {
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -68,12 +78,12 @@ export default function LoginForm() {
                     <div className="grid gap-2">
                       <Label htmlFor="email">Username</Label>
                       <Input
-                        id="username"
-                        name="username"
-                        type="username"
+                        id="email"
+                        name="email"
+                        type="email"
                         placeholder="m@example.com"
                         required
-                        value={payload.username}
+                        value={payload.email}
                         onChange={handleOnChange}
                       />
                     </div>

@@ -1,14 +1,16 @@
 // manage auth store
-import { TProductSchema } from "@/typescript/products.interface";
+import { TCartSchema } from "@/typescript/cart.interface";
 import { createStore } from "zustand-x";
 
 
+
+
 interface ICartStoreInitialValues {
-    cartItems:TProductSchema['IProductObject'][]
+  cartItems: TCartSchema['TCartObj'][];
 }
 
-const initialValues:ICartStoreInitialValues = {
-  cartItems:[]
+const initialValues: ICartStoreInitialValues = {
+  cartItems: [],
 };
 
 export const cartStore = createStore(initialValues, {
